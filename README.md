@@ -42,6 +42,12 @@ Flags:
         -v    false 
 </pre>
 
+Given conditions are tested at first:
+<pre>
+$ opt_demo -x coucou -n 3
+Condition failed: [[ 3 -lt 10 && 3 -gt 5 ]]
+</pre>
+
 No output, arguments are good to be used:
 <pre>
 $ opt_demo -x coucou -n 6
