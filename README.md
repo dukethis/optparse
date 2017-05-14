@@ -61,4 +61,4 @@ Flags:
         -v    false 
 </pre>
 
-Description part is a string without empty spaces (the trick to have spaces on the screen is to use AltGr+' ' when you type it).
+Description part is a string without empty spaces (the trick to have spaces on the screen is to use AltGr+'\ ' when you type it).
