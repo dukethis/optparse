@@ -3,13 +3,13 @@
 
 Attribution with conditions & description of options and flags
 
-Requirements:
+<h4>Requirements:</h4>
   - BAsh interpreter
 
-No installation:
+<h4>No installation:</h4>
   - Let the source file be in the PATH environment variable
 
-Usage:
+<h4>Usage:</h4>
 
 Here is a quick script <i>opt_demo</i> to introduce <b>optparse</b>:
 <pre>
