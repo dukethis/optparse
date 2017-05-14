@@ -1,0 +1,115 @@
+#!/bin/bash
+# OPTIONS & FLAGS PARSER
+#
+# OPTIONS & FLAGS AS OPTS[KEY]=VALUE
+declare -A OPTS
+# DESCRIPTIONS AS DESC[KEY]=VALUE
+declare -A DESC
+# OTHER ARGUMENTS
+declare -a ARGS
+
+# OPTIONS PROCESSING
+for opt in "${opts[@]}"; do
+	opt_desc=
+	if [[ "$opt" =~ : ]]; then
+		opt_desc="${opt##*:}"
+		opt="${opt%%:*}"
+	fi
+	OPTS[$opt]=""
+	DESC[$opt]="$opt_desc"
+done
+# ADD HELP CONTEXT BY DEFAULT
+[[ -z "$(echo ${flags[@]} | grep '[-]h')" ]] && flags=("h" ${flags[@]})
+# FLAGS PROCESSING
+for flag in "${flags[@]}"; do
+	flag_desc=
+	if [[ "$flag" =~ : ]]; then
+		flag_desc="${flag/*:/}"
+		flag="${flag/:*/}"
+	fi
+	OPTS[$flag]=false
+	DESC[$flag]="$flag_desc"
+done
+# GET THEM ALL
+while [[ $# > 0 ]]; do
+	opt="$1"
+	opt=${opt//-/}
+	if [[ "${opts[@]}" =~ "$opt" ]]; then
+		OPTS[$opt]="$2"
+		shift 2
+	else
+		if [[ "${flags[@]}" =~ "$opt" ]]; then
+			OPTS[$opt]=true
+			shift
+		else
+			ARGS=($ARGS $opt)
+			shift
+		fi
+	fi
+done
+
+# TESTING ANY CONDITION
+for opt in "${!OPTS[@]}"; do
+	[[ -z "${OPTS[$opt]}" ]] && continue
+	if [[ -n "${DESC[$opt]}" ]]; then
+		topt=$(echo "${DESC[$opt]}" | grep -oe "\[\[ .* \]\]")
+		topt="${topt//$opt/${OPTS[$opt]}}"
+		eval "$topt" || { echo "Condition failed: $topt"; exit 2; }	
+	fi
+done
+
+# CAN AFFECT OPTIONS AS KEY=${OPTS[KEY]} OR SIMPLY KEY=VALUE (INTO THE ENVIRONMENT)
+function affect_opt() { for key in "${!OPTS[@]}"; do eval "$key=${OPTS[$key]}"; done; }
+# BASIC SHOW OFF
+function show_all() {
+	echo "Options:"
+	for opt in "${!OPTS[@]}"; do
+		[[ "${opts[@]}" =~ "$opt" ]] || continue
+		printf "        %-5s %-10s %-40s\n" "-$opt" "${OPTS[$opt]}" "${DESC[$opt]}"
+	done
+	echo "Flags:"
+	for opt in "${!OPTS[@]}"; do
+		[[ "${opts[@]}" =~ "$opt" ]] && continue
+		printf "        %-5s %-10s %-40s\n" "-$opt" "${OPTS[$opt]}" "${DESC[$opt]}"
+	done
+	echo
+}
+# HELP CONTEXT
+function Help() {
+	echo
+	echo -e "Usage: $0 [options] [flags]"
+	echo
+	[[ -n about ]] && about && echo
+	show_all
+	echo
+	exit 1
+}
+# THROW HELP CONTEXT IF NEEDED
+[[ "${OPTS[h]}" =~ true ]] && Help || true
+
+
+# FOR options_demo SCRIPT :
+#    opts=(
+#    "n:a number between 5 and 10 [[ n -lt 10 && n -gt 5 ]]"
+#    "x:[[ x =~ ^[a-z]+$ ]]"
+#    )
+#    flags=("v")
+#    source optparse
+# OUTPUT :
+#        $ options_demo -n 2
+#        Condition failed: [[ 2 -lt 10 && 2 -gt 5 ]]
+#
+#        $ options_demo -n 5
+#        Condition failed: [[ 5 -lt 10 && 5 -gt 5 ]]
+#
+#        $ options_demo -n 10
+#        Condition failed: [[ 10 -lt 10 && 10 -gt 5 ]]
+#
+#        $ options_demo -n 7
+#        $ options_demo -n 7 -x cocuou
+#        $ options_demo -n 7 -x coucou
+#        $ options_demo -n 7 -x coucou2
+#        Condition failed: [[ coucou2 =~ ^[a-z]+$ ]]
+
+
+
