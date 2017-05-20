@@ -15,31 +15,46 @@ Here is a quick script <i>opt_demo</i> to introduce <b>optparse</b>:
 <pre>
 #!/bin/bash
 
-# opts array declaration
-# "option:option_description [[ option_condition ]]"
+# Mandatory: opts & flags array
 opts=(
-"n:a number between 5 and 10 [[ n -lt 10 && n -gt 5 ]]"
-"x:[[ x =~ ^[a-z]+$ ]]"
+"n:'number between 5 and 10' [[ n -lt 10 && n -gt 5 ]]"
+"x:'low-case string' [[ x =~ ^[a-z]+$ ]]"
 )
 
-# flags declaration (-h is automatic, don't bother)
-flags=("v")
+# -h flag is by default
+flags=("A:Affect all options as variables")
 
-source optparse
+# Optional description
+function about() {
+    echo "Demonstration script"
+}
+
+# Let the script do the job
+source ./optparse
+
+# If you want to affect options as variables -A:
+[[ "${OPTS[A]}" =~ true ]] && affect_opt
+echo "n="$n
+
+# TODO CODE HERE :)
+
+exit 0
 </pre>
 
 Some outputs:
 <pre>
 $ opt_demo -h
 
-Usage: /home/duke/bin/opt_demo [options] [flags]
+Usage: ./opt_demo [options] [flags]
+
+Demonstration script
 
 Options:
-        -n               a number between 5 and 10 [[ n -lt 10 && n -gt 5 ]]
-        -x               [[ x =~ ^[a-z]+$ ]]                     
+        -n               'number between 5 and 10' [[ n -lt 10 && n -gt 5 ]]
+        -x               'low-case string' [[ x =~ ^[a-z]+$ ]]   
 Flags:
-        -h    true                                               
-        -v    false 
+        -A    false      Affect all options as variables     
+        -h    true
 </pre>
 
 Given conditions are tested at first:
@@ -53,18 +68,10 @@ No output, arguments are good to be used:
 $ opt_demo -x coucou -n 6
 </pre>
 
-Help message could be useful:
+We can affect all options as variables using -A:
 <pre>
-$ opt_demo -x coucou -n 6 -h
-
-Usage: /home/duke/bin/opt_demo [options] [flags]
-
-Options:
-        -n    6          a number between 5 and 10 [[ n -lt 10 && n -gt 5 ]]
-        -x    coucou     [[ x =~ ^[a-z]+$ ]]                     
-Flags:
-        -h    true                                               
-        -v    false 
+$ opt_demo -n 6 -A
+n=6
 </pre>
 
 Description part is a string without empty spaces (the trick to have spaces on the screen is to use AltGr+SpaceBar when you type it).
