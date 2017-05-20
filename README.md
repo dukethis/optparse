@@ -30,7 +30,7 @@ function about() {
 }
 
 # Let the script do the job
-source ./optparse
+source optparse
 
 # If you want to affect options as variables -A:
 [[ "${OPTS[A]}" =~ true ]] && affect_opt
