@@ -42,7 +42,7 @@ while [[ $# > 0 ]]; do
 			OPTS[$opt]=true
 			shift
 		else
-			ARGS=($ARGS $opt)
+			ARGS=("${ARGS[@]}" "$opt")
 			shift
 		fi
 	fi
@@ -58,8 +58,14 @@ for opt in "${!OPTS[@]}"; do
 	fi
 done
 
+function about() {
+    # TODO
+    echo "Description"
+}
+
 # CAN AFFECT OPTIONS AS KEY=${OPTS[KEY]} OR SIMPLY KEY=VALUE (INTO THE ENVIRONMENT)
 function affect_opt() { for key in "${!OPTS[@]}"; do eval "$key=${OPTS[$key]}"; done; }
+
 # BASIC SHOW OFF
 function show_all() {
 	echo "Options:"
@@ -79,37 +85,12 @@ function Help() {
 	echo
 	echo -e "Usage: $0 [options] [flags]"
 	echo
-	[[ -n about ]] && about && echo
+	about
+	echo
 	show_all
 	echo
 	exit 1
 }
 # THROW HELP CONTEXT IF NEEDED
 [[ "${OPTS[h]}" =~ true ]] && Help || true
-
-
-# FOR options_demo SCRIPT :
-#    opts=(
-#    "n:a number between 5 and 10 [[ n -lt 10 && n -gt 5 ]]"
-#    "x:[[ x =~ ^[a-z]+$ ]]"
-#    )
-#    flags=("v")
-#    source optparse
-# OUTPUT :
-#        $ options_demo -n 2
-#        Condition failed: [[ 2 -lt 10 && 2 -gt 5 ]]
-#
-#        $ options_demo -n 5
-#        Condition failed: [[ 5 -lt 10 && 5 -gt 5 ]]
-#
-#        $ options_demo -n 10
-#        Condition failed: [[ 10 -lt 10 && 10 -gt 5 ]]
-#
-#        $ options_demo -n 7
-#        $ options_demo -n 7 -x cocuou
-#        $ options_demo -n 7 -x coucou
-#        $ options_demo -n 7 -x coucou2
-#        Condition failed: [[ coucou2 =~ ^[a-z]+$ ]]
-
-
 
